@@ -22,7 +22,7 @@ fun Context.hasPermissions(@Size(min = 1) vararg permission: String): Boolean {
 
 fun Activity.shouldShowCustomPermissionRequestHint(permission: String): Boolean {
     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return false
-    return !this.shouldShowRequestPermissionRationale(permission)
+    return !shouldShowRequestPermissionRationale(permission)
 }
 
 fun Activity.requestPermissions(@Size(min = 1) vararg permissions: String, requestCode: Int) {
@@ -31,7 +31,7 @@ fun Activity.requestPermissions(@Size(min = 1) vararg permissions: String, reque
 }
 
 fun Context.LocationServiceEnable(): Boolean {
-    val locationManager = this.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+    val locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
     return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
 }
 
@@ -70,10 +70,10 @@ fun Context.showLocationServiceHintDialog(
 
 fun Context.appSettingIntent(): Intent {
     val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
-    intent.data = Uri.parse("package:${this.packageName}")
+    intent.data = Uri.parse("package:$packageName")
     return intent
 }
 
-fun Context.LocationSettingIntent(): Intent {
+fun LocationSettingIntent(): Intent {
     return Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
 }
