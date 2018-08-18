@@ -1,13 +1,4 @@
 <resources>
     <string name="app_name">GoogleMapDemo</string>
     <string name="title_activity_maps">Map</string>
-
-    <string name="dialog_location_content">このアプリを利用するため、ロケーターサービスを開いてください。</string>
-    <string name="dialog_location_title">確認</string>
-    <string name="dialog_location_positive">設定する</string>
-    <string name="dialog_location_negative">キャンセル</string>
-    <string name="dialog_permission_content">このアプリのを利用するため、位置情報の利用を許諾してください。</string>
-    <string name="dialog_permission_title">確認</string>
-    <string name="dialog_permission_positive">設定する</string>
-    <string name="dialog_permission_negative">キャンセル</string>
 </resources>

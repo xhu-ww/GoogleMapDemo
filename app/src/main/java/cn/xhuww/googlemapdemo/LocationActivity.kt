@@ -3,72 +3,77 @@ package cn.xhuww.googlemapdemo
 import android.Manifest
 import android.annotation.SuppressLint
 import android.content.pm.PackageManager
+import android.location.Location
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
+import android.os.Looper
 import cn.xhuww.googlemapdemo.utils.*
 import com.google.android.gms.location.*
+
 import kotlinx.android.synthetic.main.location_activity.*
 
 class LocationActivity : AppCompatActivity() {
+    private val locationPermission = Manifest.permission.ACCESS_FINE_LOCATION
+
     private lateinit var fusedLocationClient: FusedLocationProviderClient
+    private lateinit var locationRequest: LocationRequest
     private lateinit var locationCallback: LocationCallback
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.location_activity)
+
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+        locationRequest = LocationRequest().apply {
+            interval = 10000  //请求时间间隔
+            fastestInterval = 5000 //最快时间间隔
+            priority = LocationRequest.PRIORITY_HIGH_ACCURACY
+        }
         locationCallback = object : LocationCallback() {
             override fun onLocationResult(locationResult: LocationResult?) {
                 locationResult ?: return
-                val location = locationResult.lastLocation
-                longitudeEditText.setText(location.longitude.toString())
-                latitudeEditText.setText(location.latitude.toString())
+                handleLocation(locationResult.lastLocation)
             }
         }
-
         requestLocationPermission()
-        transformAddress.setOnClickListener { requestLocationPermission() }
     }
 
     @SuppressLint("MissingPermission")
-    private fun getLastLocation() {
-//        fusedLocationClient.lastLocation.addOnSuccessListener { location ->
-//            if (location == null) return@addOnSuccessListener
-//
-//            longitudeEditText.setText(location.longitude.toString())
-//            latitudeEditText.setText(location.latitude.toString())
-//        }
+    private fun requestLocationUpdate() {
+        fusedLocationClient.requestLocationUpdates(
+            locationRequest, locationCallback, Looper.myLooper()
+        )
+    }
 
-//        val builder = LocationSettingsRequest.Builder()
-//
-//        val client: SettingsClient = LocationServices.getSettingsClient(this)
-//        val task: Task<LocationSettingsResponse> = client.checkLocationSettings(builder.build())
-//
-//        task.addOnSuccessListener { locationSettingsResponse ->
-//            if (locationSettingsResponse == null) return@addOnSuccessListener
-//
-//            longitudeEditText.setText(location.longitude.toString())
-//            latitudeEditText.setText(location.latitude.toString())
-//        }
-//        task.addOnFailureListener { exception ->
-//            exception.printStackTrace()
-//        }
+    /**
+     * 停止获取位置更新
+     */
+    private fun stopLocationUpdates() {
+        fusedLocationClient.removeLocationUpdates(locationCallback)
+    }
 
-        fusedLocationClient.requestLocationUpdates(LocationRequest(), locationCallback, null)
+    private fun handleLocation(location: Location) {
+        longitudeEditText.setText(location.longitude.toString())
+        latitudeEditText.setText(location.latitude.toString())
+
+        val url = "https://maps.googleapis.com/maps/api/geocode/json?latlng=" +
+                "${location.latitude},${location.longitude}&language=zh-CN&sensor=false"
+        addressTextView.text = url
+        //请求网络即可
     }
 
     private fun requestLocationPermission() {
         when {
-            hasPermissions(Manifest.permission.ACCESS_FINE_LOCATION) -> {
+            hasPermissions(locationPermission) -> {
                 requestLocationService()
             }
-            else -> requestPermissions(Manifest.permission.ACCESS_FINE_LOCATION, requestCode = 1)
+            else -> requestPermissions(locationPermission, requestCode = 1)
         }
     }
 
     private fun requestLocationService() {
         if (LocationServiceEnable()) {
-            getLastLocation()
+            requestLocationUpdate()
         } else {
             showLocationServiceHintDialog(
                 onPositiveButtonListener = {
@@ -84,13 +89,11 @@ class LocationActivity : AppCompatActivity() {
         grantResults: IntArray
     ) {
         if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-            getLastLocation()
-        } else if (shouldShowCustomPermissionRequestHint(Manifest.permission.ACCESS_FINE_LOCATION)) {
+            requestLocationUpdate()
+        } else if (shouldShowCustomPermissionRequestHint(locationPermission)) {
             showLocationPermissionHintDialog(onPositiveButtonListener = {
                 startActivityForResult(appSettingIntent(), APP_SETTINGS_REQUEST_CODE)
             })
-        } else {
-            requestLocationPermission()
         }
     }
 
