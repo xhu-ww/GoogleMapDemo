@@ -64,23 +64,13 @@ class LocationActivity : AppCompatActivity() {
 
     private fun requestLocationPermission() {
         when {
-            hasPermissions(locationPermission) -> {
-                requestLocationService()
-            }
+            hasPermissions(locationPermission) -> requestLocationService()
             else -> requestPermissions(locationPermission, requestCode = 1)
         }
     }
 
     private fun requestLocationService() {
-        if (LocationServiceEnable()) {
-            requestLocationUpdate()
-        } else {
-            showLocationServiceHintDialog(
-                onPositiveButtonListener = {
-                    startActivityForResult(LocationSettingIntent(), LOCATION_SETTINGS_REQUEST_CODE)
-                }
-            )
-        }
+        if (LocationServiceEnable()) requestLocationUpdate()
     }
 
     override fun onRequestPermissionsResult(
@@ -90,15 +80,6 @@ class LocationActivity : AppCompatActivity() {
     ) {
         if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
             requestLocationUpdate()
-        } else if (shouldShowCustomPermissionRequestHint(locationPermission)) {
-            showLocationPermissionHintDialog(onPositiveButtonListener = {
-                startActivityForResult(appSettingIntent(), APP_SETTINGS_REQUEST_CODE)
-            })
         }
-    }
-
-    companion object {
-        private const val APP_SETTINGS_REQUEST_CODE = 1
-        private const val LOCATION_SETTINGS_REQUEST_CODE = 2
     }
 }
